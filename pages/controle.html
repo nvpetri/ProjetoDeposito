@@ -1,75 +1,131 @@
 <!DOCTYPE html>
 <html lang="pt-br">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Controle de Estoque</title>
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Controle de Estoque - Depósito Leoo</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
   <link rel="stylesheet" href="../css/cadastro.css">
-  <script src="../script/cadastro.js" defer></script>
 </head>
 <body>
-  <main class="container py-5">
+  <div class="home">
     <a href="../index.html">
-        <img src="../img/botao-home.png" alt="" width="50rem" padding-top="0.625rem">
+      <img src="../img/botao-home.png" alt="botão home" width="10%" class="btn-home">
     </a>
-    <h1 class="text-center mb-5">Controle de Estoque - Depósito Leoo</h1>
+    <h1 class="mb-4">Controle de Estoque</h1>
+  </div>
+  <div class="container mt-5">
+    <form id="formProduto" class="row g-3">
+      <div class="col-md-4">
+        <label for="nome" class="form-label">Nome do Produto</label>
+        <input type="text" class="form-control" id="nome" required>
+      </div>
+      <div class="col-md-4">
+        <label for="tipo" class="form-label">Tipo do Produto</label>
+        <select class="form-select" id="tipo" required>
+         <option value="">Tipo de Produto</option>
+          <option>Cabos e fios</option>
+          <option>Disjuntores</option>
+          <option>Tomadas</option>
+          <option>Lâmpadas, lustres e luminárias</option>
+          <option>Interruptor</option>
+          <option>Eletrodutos ou tubos</option>
+          <option>Quadro de distribuição</option>
+          <option>Outros componentes</option>
+          <option>Bandejas elétricas</option>
+          <option>Caixas de medidores</option>
+          <option>Caixas de passagem</option>
+          <option>Fixadores para cabos</option>
+          <option>Eletrocalhas</option>
+          <option>Suportes</option>
+          <option>Leitos elétricos</option>
+          <option>Ferramentas</option>
+          <option>Chaves de fenda e alicates com isolação</option>
+          <option>Jogo de chaves combinadas</option>
+          <option>Nível bolha</option>
+          <option>Trena</option>
+          <option>Arco e serra</option>
+          <option>Alicate amperímetro</option>
+          <option>Furadeira/parafusadeira</option>
+        </select>
+      </div>
+      <div class="col-md-2">
+        <label for="quantidade" class="form-label">Quantidade</label>
+        <input type="number" class="form-control" id="quantidade" required>
+      </div>
+      <div class="col-md-2">
+        <label for="custo" class="form-label">Custo Unitário</label>
+        <input type="number" class="form-control" id="custo" step="0.01" required>
+      </div>
+      <div class="col-12">
+        <button type="submit" class="btn btn-primary">Adicionar Produto</button>
+      </div>
+    </form>
 
-    <!-- Formulário -->
-    <div class="card p-4 mb-5">
-      <h2 class="mb-4">Adicionar Produto</h2>
-      <form id="formProduto" class="row g-3">
-        <div class="col-md-6">
-          <input type="text" class="form-control" id="nome" placeholder="Nome do produto" required>
-        </div>
-        <div class="col-md-6">
-          <select id="tipo" class="form-select" required>
-            <option value="">Selecione o tipo</option>
-            <option value="Cabos e fios">Cabos e fios</option>
-            <option value="Disjuntores">Disjuntores</option>
-            <option value="Tomadas">Tomadas</option>
-            <option value="Lâmpadas e Luminárias">Lâmpadas e Luminárias</option>
-            <option value="Interruptores">Interruptores</option>
-            <option value="Eletrodutos">Eletrodutos</option>
-            <option value="Quadro de distribuição">Quadro de distribuição</option>
-            <option value="Outros">Outros</option>
-          </select>
-        </div>
-        <div class="col-md-4">
-          <input type="number" class="form-control" id="quantidade" placeholder="Quantidade" required>
-        </div>
-        <div class="col-md-4">
-          <input type="number" step="0.01" class="form-control" id="custo" placeholder="Custo unitário" required>
-        </div>
-        <div class="col-md-4">
-          <input type="number" step="0.01" class="form-control" id="venda" placeholder="Valor de venda" required>
-        </div>
-        <div class="col-12">
-          <button type="submit" class="btn btn-primary w-100">Adicionar</button>
-        </div>
-      </form>
-    </div>
+    <table class="table table-striped mt-5">
+      <thead>
+        <tr>
+          <th>Nome</th>
+          <th>Tipo</th>
+          <th>Quantidade</th>
+          <th>Custo unitário</th>
+          <th>Ações</th>
+        </tr>
+      </thead>
+      <tbody id="tabelaEstoque"></tbody>
+    </table>
+  </div>
 
-    <!-- Tabela -->
-    <div class="card p-4">
-      <h2 class="mb-4">Produtos em Estoque</h2>
-      <div class="table-responsive">
-        <table class="table table-bordered">
-          <thead class="table-light">
-            <tr>
-              <th>Produto</th>
-              <th>Tipo</th>
-              <th>Quantidade</th>
-              <th>Custo Unitário</th>
-              <th>Valor de Venda</th>
-              <th>Custo/Lucro</th>
-              <th>Ações</th>
-            </tr>
-          </thead>
-          <tbody id="tabelaEstoque"></tbody>
-        </table>
+  <!-- Modal Venda -->
+  <div class="modal fade" id="modalVenda" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title">Registrar Venda</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fechar"></button>
+        </div>
+        <div class="modal-body">
+          <form id="formVenda">
+            <input type="hidden" id="vendaIndex">
+            <div class="mb-3">
+              <label for="quantidadeVenda" class="form-label">Quantidade</label>
+              <input type="number" id="quantidadeVenda" class="form-control" required>
+            </div>
+            <div class="mb-3">
+              <label for="valorVenda" class="form-label">Valor unitário da venda</label>
+              <input type="number" id="valorVenda" class="form-control" step="0.01" required>
+            </div>
+            <button type="submit" class="btn btn-success">Confirmar Venda</button>
+          </form>
+        </div>
       </div>
     </div>
-  </main>
+  </div>
+
+   <!-- Modal para reposição de estoque -->
+   <div class="modal fade" id="modalReposicao" tabindex="-1" aria-labelledby="modalReposicaoLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="modalReposicaoLabel">Reposição de Estoque</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form id="formReposicao">
+                    <input type="hidden" id="reposicaoIndex">
+                    <div class="mb-3">
+                        <label for="quantidadeReposicao" class="form-label">Quantidade de Reposição</label>
+                        <input type="number" class="form-control" id="quantidadeReposicao" required>
+                    </div>
+                    <button type="submit" class="btn btn-success">Repor Estoque</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+</div>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+  <script src="../script/cadastro.js"></script>
 </body>
 </html>

@@ -1,0 +1,72 @@
+*{
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+.home{
+  width: 100%;
+  display: flex;
+  margin-top: 2%;
+}
+
+.btn-home{
+  margin-left: 8%;
+  
+}
+/* entradas.css */
+
+body {
+  font-family: Arial, sans-serif;
+  background-color: #f8f9fa;
+  color: #495057;
+}
+
+.container {
+  max-width: 900px;
+  margin-top: 50px;
+}
+
+h1 {
+  text-align: center;
+  margin-bottom: 30px;
+}
+
+.table {
+  background-color: white;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.table th, .table td {
+  padding: 15px;
+  text-align: center;
+  border-bottom: 1px solid #ddd;
+}
+
+.table th {
+  background-color: #007bff;
+  color: white;
+}
+
+.table td {
+  background-color: #f8f9fa;
+}
+
+.d-flex {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 30px;
+}
+
+h4 {
+  font-weight: bold;
+  color: #343a40;
+}
+
+#totalInvestido, #totalRepostos {
+  font-size: 1.2rem;
+  font-weight: bold;
+}
+
+  

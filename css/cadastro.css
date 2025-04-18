@@ -4,7 +4,19 @@
     padding: 0;
 }
 
+.home{
+  width: 100%;
+  display: flex;
+  margin-top: 2%;
+}
+
+.btn-home{
+  margin-left: 8%;
+  
+}
+
 body {
+
     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
     background-color: #f4f4f9;
     margin: 0;

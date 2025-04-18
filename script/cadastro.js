@@ -2,6 +2,10 @@
 
 const form = document.getElementById('formProduto');
 const tabela = document.getElementById('tabelaEstoque');
+const modalVenda = new bootstrap.Modal(document.getElementById('modalVenda'));
+const modalReposicao = new bootstrap.Modal(document.getElementById('modalReposicao'));
+const formVenda = document.getElementById('formVenda');
+const formReposicao = document.getElementById('formReposicao');
 
 function carregarEstoque() {
   const estoque = JSON.parse(localStorage.getItem('estoque') || '[]');
@@ -10,12 +14,11 @@ function carregarEstoque() {
   estoque.forEach((item, index) => {
     const total = (item.custo * item.quantidade).toFixed(2);
 
+    // Calculando total de vendas e total de custo
     const vendasDoItem = vendas.filter(v => v.nome === item.nome);
     const totalLucro = vendasDoItem.reduce((acc, v) => acc + (v.valorUnitario * v.quantidade), 0);
     const totalGasto = vendasDoItem.reduce((acc, v) => acc + (v.custoTotal ? parseFloat(v.custoTotal) : 0), 0);
-    const diferenca = (totalLucro - totalGasto).toFixed(2);
-    const lucroOuPrejuizo = diferenca >= 0 ? `Lucro: R$ ${diferenca}` : `Prejuízo: R$ ${Math.abs(diferenca)}`;
-    const corClasse = diferenca >= 0 ? 'text-green-600' : 'text-red-600';
+    
 
     tabela.innerHTML += `
       <tr>
@@ -23,11 +26,9 @@ function carregarEstoque() {
         <td>${item.tipo}</td>
         <td>${item.quantidade}</td>
         <td>R$ ${item.custo.toFixed(2)}</td>
-        <td>R$ ${item.venda.toFixed(2)}</td>
-        <td class="${corClasse}">${lucroOuPrejuizo}</td>
         <td class="actions">
-          <button onclick="registrarVenda(${index})">Vender</button>
-          <button onclick="reporEstoque(${index})">Repor</button>
+          <button onclick="abrirModalVenda(${index})">Vender</button>
+          <button onclick="abrirModalReposicao(${index})">Reposição</button>
           <button onclick="removerProduto(${index})">Remover</button>
         </td>
       </tr>
@@ -42,20 +43,35 @@ function removerProduto(index) {
   carregarEstoque();
 }
 
-function registrarVenda(index) {
+function abrirModalVenda(index) {
+  const estoque = JSON.parse(localStorage.getItem('estoque') || '[]');
+  const produto = estoque[index];
+
+  // Preencher os campos do modal
+  document.getElementById('vendaIndex').value = index;
+  document.getElementById('quantidadeVenda').value = '';
+  document.getElementById('valorVenda').value = '';
+  modalVenda.show();
+}
+
+function abrirModalReposicao(index) {
+  const estoque = JSON.parse(localStorage.getItem('estoque') || '[]');
+  const produto = estoque[index];
+
+  // Preencher os campos do modal
+  document.getElementById('reposicaoIndex').value = index;
+  document.getElementById('quantidadeReposicao').value = '';
+  modalReposicao.show();
+}
+
+function registrarVenda(index, quantidadeVenda, valorVenda) {
   const estoque = JSON.parse(localStorage.getItem('estoque') || '[]');
   const vendas = JSON.parse(localStorage.getItem('vendas') || '[]');
 
   const produto = estoque[index];
-  const quantidadeVenda = parseInt(prompt(`Quantas unidades de "${produto.nome}" deseja vender?`));
-
-  if (isNaN(quantidadeVenda) || quantidadeVenda <= 0) {
-    alert("Quantidade inválida.");
-    return;
-  }
 
   if (quantidadeVenda > produto.quantidade) {
-    alert("Estoque insuficiente.");
+    alert('Estoque insuficiente.');
     return;
   }
 
@@ -65,9 +81,9 @@ function registrarVenda(index) {
     nome: produto.nome,
     tipo: produto.tipo,
     quantidade: quantidadeVenda,
-    valorUnitario: produto.venda,
+    valorUnitario: valorVenda,
     data: new Date().toLocaleString(),
-    total: (quantidadeVenda * produto.venda).toFixed(2),
+    total: (quantidadeVenda * valorVenda).toFixed(2),
     custoTotal: (quantidadeVenda * produto.custo).toFixed(2)
   };
 
@@ -78,18 +94,12 @@ function registrarVenda(index) {
   carregarEstoque();
 }
 
-function reporEstoque(index) {
+function reposicionarEstoque(index, quantidadeReposicao) {
   const estoque = JSON.parse(localStorage.getItem('estoque') || '[]');
+
   const produto = estoque[index];
+  produto.quantidade += quantidadeReposicao;
 
-  const quantidadeRepor = parseInt(prompt(`Quantas unidades de "${produto.nome}" chegaram ao estoque?`));
-
-  if (isNaN(quantidadeRepor) || quantidadeRepor <= 0) {
-    alert("Quantidade inválida.");
-    return;
-  }
-
-  produto.quantidade += quantidadeRepor;
   localStorage.setItem('estoque', JSON.stringify(estoque));
   carregarEstoque();
 }
@@ -100,14 +110,47 @@ form.addEventListener('submit', (e) => {
   const tipo = document.getElementById('tipo').value;
   const quantidade = parseInt(document.getElementById('quantidade').value);
   const custo = parseFloat(document.getElementById('custo').value);
-  const venda = parseFloat(document.getElementById('venda').value);
 
   const estoque = JSON.parse(localStorage.getItem('estoque') || '[]');
-  estoque.push({ nome, tipo, quantidade, custo, venda });
+  estoque.push({ nome, tipo, quantidade, custo });
   localStorage.setItem('estoque', JSON.stringify(estoque));
 
   form.reset();
   carregarEstoque();
+});
+
+formVenda.addEventListener('submit', (e) => {
+  e.preventDefault();
+  const index = document.getElementById('vendaIndex').value;
+  const quantidadeVenda = parseInt(document.getElementById('quantidadeVenda').value);
+  const valorVenda = parseFloat(document.getElementById('valorVenda').value);
+
+  if (isNaN(quantidadeVenda) || quantidadeVenda <= 0) {
+    alert('Quantidade inválida.');
+    return;
+  }
+
+  if (isNaN(valorVenda) || valorVenda <= 0) {
+    alert('Valor de venda inválido.');
+    return;
+  }
+
+  registrarVenda(index, quantidadeVenda, valorVenda);
+  modalVenda.hide();
+});
+
+formReposicao.addEventListener('submit', (e) => {
+  e.preventDefault();
+  const index = document.getElementById('reposicaoIndex').value;
+  const quantidadeReposicao = parseInt(document.getElementById('quantidadeReposicao').value);
+
+  if (isNaN(quantidadeReposicao) || quantidadeReposicao <= 0) {
+    alert('Quantidade inválida.');
+    return;
+  }
+
+  reposicionarEstoque(index, quantidadeReposicao);
+  modalReposicao.hide();
 });
 
 window.onload = carregarEstoque;

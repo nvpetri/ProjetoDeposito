@@ -3,55 +3,65 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Controle de Estoque - Depósito Leoo</title>
-  <link rel="stylesheet" href="./css/style.css">
-  <script src="./script/index.js"></script>
-  <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+  <title>Dashboard - Depósito Leoo</title>
+  <link rel="stylesheet" href="./css/index.css">
+  <script src="./script/index.js" defer></script>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
 </head>
-<body class="bg-gray-100 text-gray-900 font-sans">
-  <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
-    <h1 class="text-2xl font-bold mb-6 text-center">Controle de Estoque - Depósito Leoo</h1>
-
-    <div class="bg-white p-6 rounded-xl shadow mb-8">
-      <h2 class="text-xl font-semibold mb-4">Adicionar Produto</h2>
-      <form id="formProduto" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-        <input type="text" id="nome" placeholder="Nome do produto" required>
-        <select id="tipo" required>
-          <option value="">Selecione o tipo</option>
-          <option value="Cabos e fios">Cabos e fios</option>
-          <option value="Disjuntores">Disjuntores</option>
-          <option value="Tomadas">Tomadas</option>
-          <option value="Lâmpadas e Luminárias">Lâmpadas e Luminárias</option>
-          <option value="Interruptores">Interruptores</option>
-          <option value="Eletrodutos">Eletrodutos</option>
-          <option value="Quadro de distribuição">Quadro de distribuição</option>
-          <option value="Outros">Outros</option>
-        </select>
-        <input type="number" id="quantidade" placeholder="Quantidade" required>
-        <input type="number" step="0.01" id="custo" placeholder="Custo unitário" required>
-        <input type="number" step="0.01" id="venda" placeholder="Valor de venda" required>
-        <button type="submit" class="col-span-1 sm:col-span-2 lg:col-span-3 bg-blue-600 text-white py-2 rounded hover:bg-blue-700">Adicionar</button>
-      </form>
+<body>
+  <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
+    <div class="container-fluid">
+      <a class="navbar-brand" href="#">Depósito Leoo</a>
     </div>
+  </nav>
 
-    <div class="bg-white p-4 sm:p-6 rounded-xl shadow overflow-x-auto">
-      <h2 class="text-xl font-semibold mb-4">Produtos em Estoque</h2>
-      <table class="min-w-full text-left border">
-        <thead class="bg-gray-200">
-          <tr>
-            <th class="px-4 py-2 whitespace-nowrap">Produto</th>
-            <th class="px-4 py-2 whitespace-nowrap">Tipo</th>
-            <th class="px-4 py-2 whitespace-nowrap">Quantidade</th>
-            <th class="px-4 py-2 whitespace-nowrap">Custo Unitário</th>
-            <th class="px-4 py-2 whitespace-nowrap">Valor de Venda</th>
-            <th class="px-4 py-2 whitespace-nowrap">Total Custo</th>
-            <th class="px-4 py-2 whitespace-nowrap">Ações</th>
-          </tr>
-        </thead>
-        <tbody id="tabelaEstoque"></tbody>
-      </table>
+  <div class="container mt-4">
+    <div class="row">
+      <div class="col-md-3">
+        <div class="list-group">
+          <a href="#" class="list-group-item list-group-item-action active">Dashboard</a>
+          <a href="./pages/controle.html" class="list-group-item list-group-item-action">Controle de Estoque</a>
+          <a href="#" class="list-group-item list-group-item-action">Entradas</a>
+          <a href="#" class="list-group-item list-group-item-action">Saídas</a>
+          <a href="#" class="list-group-item list-group-item-action">Relatórios</a>
+        </div>
+      </div>
+      <div class="col-md-9">
+        <h2 class="mb-4">Visão Geral</h2>
+        <div class="row g-4">
+          <div class="col-md-4">
+            <div class="card text-white bg-success">
+              <div class="card-body">
+                <h5 class="card-title">Total em Estoque</h5>
+                <p class="card-text" id="estoqueTotal">R$ 0,00</p>
+              </div>
+            </div>
+          </div>
+          <div class="col-md-4">
+            <div class="card text-white bg-info">
+              <div class="card-body">
+                <h5 class="card-title">Produtos Cadastrados</h5>
+                <p class="card-text" id="produtosCadastrados">0</p>
+              </div>
+            </div>
+          </div>
+          <div class="col-md-4">
+            <div class="card text-white bg-warning">
+              <div class="card-body">
+                <h5 class="card-title">Valor Potencial de Venda</h5>
+                <p class="card-text" id="valorVenda">R$ 0,00</p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="mt-5">
+          <h4>Resumo Rápido</h4>
+          <p>Aqui você encontra uma visão geral do seu estoque e das principais movimentações.</p>
+        </div>
+      </div>
     </div>
-  </main>
+  </div>
 
 </body>
 </html>

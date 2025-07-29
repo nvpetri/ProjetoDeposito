@@ -1,16 +1,17 @@
+
 const form = document.getElementById('formProduto');
 const tabela = document.getElementById('tabelaEstoque');
 
-// Função para carregar o estoque e exibir os produtos na tabela
-function carregarEstoque() {
-    if (!tabela) return; // Só tenta preencher se a tabela existir
+async function carregarEstoque() {
+    if (!tabela) return;
 
-    const estoque = JSON.parse(localStorage.getItem('estoque') || '[]');
-    const vendas = JSON.parse(localStorage.getItem('vendas') || '[]');
+    const estoqueResponse = await fetch('http://localhost:3000/materiais');
+    const vendasResponse = await fetch('http://localhost:3000/vendas');
+    const estoque = await estoqueResponse.json();
+    const vendas = await vendasResponse.json();
+
     tabela.innerHTML = '';
-    estoque.forEach((item, index) => {
-        const total = (item.custo * item.quantidade).toFixed(2);
-
+    estoque.forEach((item) => {
         const vendasDoItem = vendas.filter(v => v.nome === item.nome);
         const totalLucro = vendasDoItem.reduce((acc, v) => acc + (v.valorUnitario * v.quantidade), 0);
         const totalGasto = vendasDoItem.reduce((acc, v) => acc + (v.custoTotal ? parseFloat(v.custoTotal) : 0), 0);
@@ -24,31 +25,23 @@ function carregarEstoque() {
             <td>${item.tipo}</td>
             <td>${item.quantidade}</td>
             <td>R$ ${item.custo.toFixed(2)}</td>
-            <td>R$ ${item.venda.toFixed(2)}</td>
+            <td>R$ ${item.venda?.toFixed(2) || '—'}</td>
             <td class="${corClasse}">${lucroOuPrejuizo}</td>
             <td class="actions">
-                <button onclick="registrarVenda(${index})" data-toggle="modal" data-target="#vendaModal">Vender</button>
-                <button onclick="removerProduto(${index})">Remover</button>
+                <button onclick="registrarVenda(${item.id})">Vender</button>
+                <button onclick="removerProduto(${item.id})">Remover</button>
             </td>
         </tr>
         `;
     });
 }
 
-// Função para remover um produto do estoque
-function removerProduto(index) {
-    const estoque = JSON.parse(localStorage.getItem('estoque') || '[]');
-    estoque.splice(index, 1);
-    localStorage.setItem('estoque', JSON.stringify(estoque));
+async function removerProduto(id) {
+    await fetch(`http://localhost:3000/materiais/${id}`, { method: 'DELETE' });
     carregarEstoque();
 }
 
-// Função para registrar uma venda
-function registrarVenda(index) {
-    const estoque = JSON.parse(localStorage.getItem('estoque') || '[]');
-    const vendas = JSON.parse(localStorage.getItem('vendas') || '[]');
-
-    const produto = estoque[index];
+async function registrarVenda(id) {
     const quantidadeVenda = parseInt(document.getElementById('quantidadeVenda').value);
     const valorVenda = parseFloat(document.getElementById('valorVendaProduto').value);
 
@@ -57,38 +50,22 @@ function registrarVenda(index) {
         return;
     }
 
-    if (quantidadeVenda > produto.quantidade) {
-        alert("Estoque insuficiente.");
-        return;
-    }
-
-    produto.quantidade -= quantidadeVenda;
-
-    const venda = {
-        nome: produto.nome,
-        tipo: produto.tipo,
-        quantidade: quantidadeVenda,
-        valorUnitario: valorVenda,
-        data: new Date().toLocaleString(),
-        total: (quantidadeVenda * valorVenda).toFixed(2)
-    };
-
-    vendas.push(venda);
-
-    localStorage.setItem('estoque', JSON.stringify(estoque));
-    localStorage.setItem('vendas', JSON.stringify(vendas));
+    await fetch('http://localhost:3000/vendas', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ materialId: id, quantidade: quantidadeVenda, valorUnitario: valorVenda })
+    });
 
     document.getElementById('quantidadeVenda').value = '';
     document.getElementById('valorVendaProduto').value = '';
-
     carregarEstoque();
     atualizarValorVenda();
 }
 
-// Atualiza o valor de vendas no dashboard
-function atualizarValorVenda() {
-    const vendas = JSON.parse(localStorage.getItem('vendas') || '[]');
-    const valorVendido = vendas.reduce((acc, venda) => acc + parseFloat(venda.total), 0).toFixed(2);
+async function atualizarValorVenda() {
+    const response = await fetch('http://localhost:3000/vendas');
+    const vendas = await response.json();
+    const valorVendido = vendas.reduce((acc, venda) => acc + (venda.total ? parseFloat(venda.total) : 0), 0).toFixed(2);
 
     const valorVendaEl = document.getElementById('valorVenda');
     if (valorVendaEl) {
@@ -96,41 +73,22 @@ function atualizarValorVenda() {
     }
 }
 
-// Só adiciona o event listener se o form existir na página
-if (form) {
-    form.addEventListener('submit', (e) => {
-        e.preventDefault();
-        const nome = document.getElementById('nome').value;
-        const tipo = document.getElementById('tipo').value;
-        const quantidade = parseInt(document.getElementById('quantidade').value);
-        const custo = parseFloat(document.getElementById('custo').value);
-        const venda = parseFloat(document.getElementById('venda').value);
+async function gerarGraficoFinanceiro() {
+    const response = await fetch('http://localhost:3000/vendas');
+    const vendas = await response.json();
 
-        const estoque = JSON.parse(localStorage.getItem('estoque') || '[]');
-        estoque.push({ nome, tipo, quantidade, custo, venda });
-        localStorage.setItem('estoque', JSON.stringify(estoque));
-
-        form.reset();
-        carregarEstoque();
-    });
-}
-function gerarGraficoFinanceiro() {
-    const vendas = JSON.parse(localStorage.getItem('vendas') || '[]');
-
-    // Objeto para armazenar por data
     const dadosPorData = {};
-
     const hoje = new Date();
-    
+
     for (let i = 6; i >= 0; i--) {
         const data = new Date();
         data.setDate(hoje.getDate() - i);
-        const dataFormatada = data.toLocaleDateString('pt-BR', { timeZone: 'UTC' }); // "18/04/2025"
+        const dataFormatada = data.toLocaleDateString('pt-BR', { timeZone: 'UTC' });
         dadosPorData[dataFormatada] = { receita: 0, custo: 0 };
     }
 
     vendas.forEach(venda => {
-        const data = venda.data.split(',')[0]; // pega só a data
+        const data = venda.data.split(',')[0];
         if (dadosPorData[data]) {
             dadosPorData[data].receita += venda.valorUnitario * venda.quantidade;
             dadosPorData[data].custo += venda.custoTotal ? parseFloat(venda.custoTotal) : 0;
@@ -181,9 +139,26 @@ function gerarGraficoFinanceiro() {
     });
 }
 
+if (form) {
+    form.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const nome = document.getElementById('nome').value;
+        const tipo = document.getElementById('tipo').value;
+        const quantidade = parseInt(document.getElementById('quantidade').value);
+        const custo = parseFloat(document.getElementById('custo').value);
+        const venda = parseFloat(document.getElementById('venda').value);
 
+        await fetch('http://localhost:3000/materiais', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ nome, tipo, quantidade, custo, venda })
+        });
 
-// Quando a página carregar
+        form.reset();
+        carregarEstoque();
+    });
+}
+
 window.onload = () => {
     carregarEstoque();
     atualizarValorVenda();

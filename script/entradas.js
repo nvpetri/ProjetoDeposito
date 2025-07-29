@@ -1,25 +1,23 @@
-// entradas.js
 
 const tabelaEntradas = document.getElementById('tabelaEntradas');
 const totalInvestidoElement = document.getElementById('totalInvestido');
 const totalRepostosElement = document.getElementById('totalRepostos');
 
-// Carregar entradas de estoque
-function carregarEntradas() {
-    const estoque = JSON.parse(localStorage.getItem('estoque') || '[]');
+async function carregarEntradas() {
+    const response = await fetch('http://localhost:3000/materiais');
+    const estoque = await response.json();
+
     let totalInvestido = 0;
     let totalProdutosRepostos = 0;
-    
+
     tabelaEntradas.innerHTML = '';
 
-    // Percorre o estoque e exibe os produtos que foram repostos
     estoque.forEach((produto) => {
-        if (produto.quantidade > 0) { // Considerando apenas produtos com estoque positivo
+        if (produto.quantidade > 0) {
             const totalInvestidoProduto = produto.custo * produto.quantidade;
             totalInvestido += totalInvestidoProduto;
             totalProdutosRepostos += produto.quantidade;
 
-            // Exibe a linha na tabela
             tabelaEntradas.innerHTML += `
                 <tr>
                     <td>${produto.nome}</td>
@@ -36,5 +34,4 @@ function carregarEntradas() {
     totalRepostosElement.textContent = totalProdutosRepostos;
 }
 
-// Carrega as entradas quando a página for carregada
 window.onload = carregarEntradas;

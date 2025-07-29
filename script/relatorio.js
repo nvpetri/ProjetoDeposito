@@ -1,11 +1,12 @@
-// relatorio.js
 
 const tabelaRelatorio = document.getElementById('tabelaRelatorio').getElementsByTagName('tbody')[0];
 const totalVendasElement = document.getElementById('totalVendas');
 const totalLucroElement = document.getElementById('totalLucro');
 
-function carregarRelatorio() {
-    const vendas = JSON.parse(localStorage.getItem('vendas') || '[]');
+async function carregarRelatorio() {
+    const response = await fetch('http://localhost:3000/vendas');
+    const vendas = await response.json();
+
     tabelaRelatorio.innerHTML = '';
     let totalVendas = 0;
     let totalLucro = 0;

@@ -1,4 +1,3 @@
-// script.js
 
 const form = document.getElementById('formProduto');
 const tabela = document.getElementById('tabelaEstoque');
@@ -7,19 +6,11 @@ const modalReposicao = new bootstrap.Modal(document.getElementById('modalReposic
 const formVenda = document.getElementById('formVenda');
 const formReposicao = document.getElementById('formReposicao');
 
-function carregarEstoque() {
-  const estoque = JSON.parse(localStorage.getItem('estoque') || '[]');
-  const vendas = JSON.parse(localStorage.getItem('vendas') || '[]');
+async function carregarEstoque() {
+  const response = await fetch('http://localhost:3000/materiais');
+  const estoque = await response.json();
   tabela.innerHTML = '';
-  estoque.forEach((item, index) => {
-    const total = (item.custo * item.quantidade).toFixed(2);
-
-    // Calculando total de vendas e total de custo
-    const vendasDoItem = vendas.filter(v => v.nome === item.nome);
-    const totalLucro = vendasDoItem.reduce((acc, v) => acc + (v.valorUnitario * v.quantidade), 0);
-    const totalGasto = vendasDoItem.reduce((acc, v) => acc + (v.custoTotal ? parseFloat(v.custoTotal) : 0), 0);
-    
-
+  estoque.forEach((item) => {
     tabela.innerHTML += `
       <tr>
         <td>${item.nome}</td>
@@ -27,101 +18,71 @@ function carregarEstoque() {
         <td>${item.quantidade}</td>
         <td>R$ ${item.custo.toFixed(2)}</td>
         <td class="actions">
-          <button onclick="abrirModalVenda(${index})">Vender</button>
-          <button onclick="abrirModalReposicao(${index})">Reposição</button>
-          <button onclick="removerProduto(${index})">Remover</button>
+          <button onclick="abrirModalVenda(${item.id})">Vender</button>
+          <button onclick="abrirModalReposicao(${item.id})">Reposição</button>
+          <button onclick="removerProduto(${item.id})">Remover</button>
         </td>
       </tr>
     `;
   });
 }
 
-function removerProduto(index) {
-  const estoque = JSON.parse(localStorage.getItem('estoque') || '[]');
-  estoque.splice(index, 1);
-  localStorage.setItem('estoque', JSON.stringify(estoque));
+async function removerProduto(id) {
+  await fetch(`http://localhost:3000/materiais/${id}`, { method: 'DELETE' });
   carregarEstoque();
 }
 
-function abrirModalVenda(index) {
-  const estoque = JSON.parse(localStorage.getItem('estoque') || '[]');
-  const produto = estoque[index];
-
-  // Preencher os campos do modal
-  document.getElementById('vendaIndex').value = index;
+function abrirModalVenda(id) {
+  document.getElementById('vendaIndex').value = id;
   document.getElementById('quantidadeVenda').value = '';
   document.getElementById('valorVenda').value = '';
   modalVenda.show();
 }
 
-function abrirModalReposicao(index) {
-  const estoque = JSON.parse(localStorage.getItem('estoque') || '[]');
-  const produto = estoque[index];
-
-  // Preencher os campos do modal
-  document.getElementById('reposicaoIndex').value = index;
+function abrirModalReposicao(id) {
+  document.getElementById('reposicaoIndex').value = id;
   document.getElementById('quantidadeReposicao').value = '';
   modalReposicao.show();
 }
 
-function registrarVenda(index, quantidadeVenda, valorVenda) {
-  const estoque = JSON.parse(localStorage.getItem('estoque') || '[]');
-  const vendas = JSON.parse(localStorage.getItem('vendas') || '[]');
-
-  const produto = estoque[index];
-
-  if (quantidadeVenda > produto.quantidade) {
-    alert('Estoque insuficiente.');
-    return;
-  }
-
-  produto.quantidade -= quantidadeVenda;
-
-  const venda = {
-    nome: produto.nome,
-    tipo: produto.tipo,
-    quantidade: quantidadeVenda,
-    valorUnitario: valorVenda,
-    data: new Date().toLocaleString(),
-    total: (quantidadeVenda * valorVenda).toFixed(2),
-    custoTotal: (quantidadeVenda * produto.custo).toFixed(2)
-  };
-
-  vendas.push(venda);
-
-  localStorage.setItem('estoque', JSON.stringify(estoque));
-  localStorage.setItem('vendas', JSON.stringify(vendas));
+async function registrarVenda(id, quantidadeVenda, valorVenda) {
+  await fetch('http://localhost:3000/vendas', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ materialId: id, quantidade: quantidadeVenda, valorUnitario: valorVenda })
+  });
   carregarEstoque();
 }
 
-function reposicionarEstoque(index, quantidadeReposicao) {
-  const estoque = JSON.parse(localStorage.getItem('estoque') || '[]');
-
-  const produto = estoque[index];
-  produto.quantidade += quantidadeReposicao;
-
-  localStorage.setItem('estoque', JSON.stringify(estoque));
+async function reposicionarEstoque(id, quantidadeReposicao) {
+  await fetch(`http://localhost:3000/materiais/${id}/reposicao`, {
+    method: 'PATCH',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ quantidade: quantidadeReposicao })
+  });
   carregarEstoque();
 }
 
-form.addEventListener('submit', (e) => {
+form.addEventListener('submit', async (e) => {
   e.preventDefault();
   const nome = document.getElementById('nome').value;
   const tipo = document.getElementById('tipo').value;
   const quantidade = parseInt(document.getElementById('quantidade').value);
   const custo = parseFloat(document.getElementById('custo').value);
 
-  const estoque = JSON.parse(localStorage.getItem('estoque') || '[]');
-  estoque.push({ nome, tipo, quantidade, custo });
-  localStorage.setItem('estoque', JSON.stringify(estoque));
+  await fetch('http://localhost:3000/materiais', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ nome, tipo, quantidade, custo })
+  });
 
   form.reset();
   carregarEstoque();
 });
 
-formVenda.addEventListener('submit', (e) => {
+formVenda.addEventListener('submit', async (e) => {
   e.preventDefault();
-  const index = document.getElementById('vendaIndex').value;
+  const id = document.getElementById('vendaIndex').value;
   const quantidadeVenda = parseInt(document.getElementById('quantidadeVenda').value);
   const valorVenda = parseFloat(document.getElementById('valorVenda').value);
 
@@ -135,13 +96,13 @@ formVenda.addEventListener('submit', (e) => {
     return;
   }
 
-  registrarVenda(index, quantidadeVenda, valorVenda);
+  await registrarVenda(id, quantidadeVenda, valorVenda);
   modalVenda.hide();
 });
 
-formReposicao.addEventListener('submit', (e) => {
+formReposicao.addEventListener('submit', async (e) => {
   e.preventDefault();
-  const index = document.getElementById('reposicaoIndex').value;
+  const id = document.getElementById('reposicaoIndex').value;
   const quantidadeReposicao = parseInt(document.getElementById('quantidadeReposicao').value);
 
   if (isNaN(quantidadeReposicao) || quantidadeReposicao <= 0) {
@@ -149,7 +110,7 @@ formReposicao.addEventListener('submit', (e) => {
     return;
   }
 
-  reposicionarEstoque(index, quantidadeReposicao);
+  await reposicionarEstoque(id, quantidadeReposicao);
   modalReposicao.hide();
 });
 

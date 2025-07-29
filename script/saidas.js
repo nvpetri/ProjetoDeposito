@@ -1,14 +1,13 @@
-// script.js para a página de Saídas
 
 const tabelaSaidas = document.getElementById('tabelaSaidas');
 const totalInvestido = document.getElementById('totalInvestido');
 const totalRepostos = document.getElementById('totalRepostos');
 
-function carregarSaidas() {
-    const vendas = JSON.parse(localStorage.getItem('vendas') || '[]');
-    
+async function carregarSaidas() {
+    const response = await fetch('http://localhost:3000/vendas');
+    const vendas = await response.json();
+
     tabelaSaidas.innerHTML = '';
-    
     let totalVendido = 0;
     let totalQuantidadeVendida = 0;
 
@@ -28,13 +27,8 @@ function carregarSaidas() {
         `;
     });
 
-    // Atualiza o valor total investido (vendido) e total de produtos vendidos
     totalInvestido.innerText = `R$ ${totalVendido.toFixed(2)}`;
     totalRepostos.innerText = totalQuantidadeVendida;
-
-    // Armazena o total vendido no localStorage para uso em outras páginas (como o Dashboard)
-    localStorage.setItem('totalVendido', totalVendido.toFixed(2));
 }
 
-// Carregar as saídas ao carregar a página
 window.onload = carregarSaidas;
